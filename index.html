@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人主页</title>
+    <script src="https://unpkg.com/mammoth@1.4.8/mammoth.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background: #f5f7fa;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        .login-box {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: none;
+        }
+        .top-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .avatar-box {
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        #avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #409eff;
+            transition: transform 0.3s;
+        }
+        #avatar:hover { transform: scale(1.05); }
+        #avatar-input { display: none; }
+        .right-menu {
+            width: 200px;
+            background: white;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            border-radius: 6px;
+            display: none;
+            z-index: 9999;
+            overflow: hidden;
+            position: absolute;
+        }
+        .right-menu-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .right-menu-item:hover {
+            background: #f0f7ff;
+            color: #409eff;
+        }
+        .user-name {
+            font-size: 24px;
+            margin: 12px 0;
+            color: #333;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #409eff;
+            color: white;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #337ecc; }
+        .logout-btn { background: #888; }
+        .del-btn {
+            background: #f56c6c;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        .clear-btn {
+            background: #666;
+            margin-top: 10px;
+            font-size: 13px;
+            padding: 6px 12px;
+        }
+        .message-box { margin-top: 35px; }
+        .title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #409eff;
+            padding-left: 10px;
+            color: #333;
+        }
+        #message-input {
+            width: 100%;
+            height: 100px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+            margin-bottom: 10px;
+        }
+        .message-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            position: relative;
+            cursor: default;
+        }
+        .time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        .section-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            position: relative;
+            opacity: 0;
+            transform: translateY(60px);
+            transition: all 0.7s ease-out;
+        }
+        .section-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .section-card.hide-up {
+            opacity: 0;
+            transform: translateY(-60px);
+        }
+        .section-title {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .section-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #409eff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-top: 10px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .section-btn:hover { background: #337ecc; }
+        .file-preview {
+            margin-top: 20px;
+            padding-top:15px;
+            border-top:1px solid #eee;
+        }
+        .file-item {
+            padding:8px 12px;
+            background:#f5f7fa;
+            border-radius:6px;
+            margin:8px 0;
+            font-size:14px;
+            display:flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .link-btn-item{
+            display: inline-block;
+            margin: 6px 4px;
+        }
+        .modal {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5);
+            display: none; justify-content: center; align-items: center;
+            z-index: 999;
+        }
+        .modal-content {
+            background: white; padding:30px; border-radius:12px; text-align:center;
+            width:90%; max-width:500px;
+        }
+        .modal-input {
+            width: 100%; padding:10px; margin:10px 0;
+            border:1px solid #ddd; border-radius:8px;
+        }
+        .text-area-lg{
+            width:100%;
+            height:260px;
+            padding:12px;
+            border:1px solid #ddd;
+            border-radius:8px;
+            resize:vertical;
+            margin:10px 0;
+        }
+        #editWechatImg {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .group-img-grid {
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .group-img-wrap {
+            position: relative;
+        }
+        .group-img-item {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .img-del-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(245,108,108,0.9);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+        .group-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .group-link-box{
+            margin-top:20px;
+            padding-top:15px;
+            border-top:1px solid #eee;
+        }
+        .history-item{
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            text-align: left;
+        }
+        .history-time{
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="login-box" id="loginPage">
+    <h2>用户登录</h2>
+    <input type="text" id="name" placeholder="请输入姓名">
+    <input type="text" id="sid" placeholder="请输入学号/编号">
+    <button class="btn" style="width:100%" onclick="login()">登录</button>
+    <div class="right-menu" id="loginRightMenu">
+        <div class="right-menu-item" onclick="showLoginHistory()">查看历史登录记录</div>
+    </div>
+</div>
+
+<div class="container" id="mainPage">
+    <div class="top-card">
+        <div class="avatar-box">
+            <img id="avatar" src="https://picsum.photos/200" alt="头像">
+            <div class="right-menu" id="avatarMenu">
+                <div class="right-menu-item" onclick="changeAvatar()">更换头像</div>
+            </div>
+            <input type="file" id="avatar-input" accept="image/*">
+            <div class="user-name" id="showName"></div>
+            <button class="btn" onclick="openContact()">联系我</button>
+            <button class="btn logout-btn" onclick="logout()">退出登录</button>
+        </div>
+        <div class="message-box">
+            <div class="title">留言板</div>
+            <textarea id="message-input" placeholder="来说点什么..."></textarea>
+            <button class="btn" onclick="sendMessage()">发布留言</button>
+            <div id="message-list"></div>
+        </div>
+    </div>
+
+    <div class="section-card" id="about-section">
+        <h2 class="section-title">关于我</h2>
+        <p>你好！欢迎来到我的个人主页。</p>
+        <div class="section-btn" onclick="openAboutFile()">了解更多</div>
+
+        <div class="file-preview" id="aboutFileList"></div>
+        <div class="file-preview">
+            <h4 style="margin:10px 0;color:#666;">快捷跳转链接</h4>
+            <div id="aboutLinkBox"></div>
+        </div>
+        <button class="btn clear-btn" onclick="clearAboutFiles()">清空全部文件</button>
+        <button class="btn clear-btn" onclick="clearAboutLink()">清空全部链接</button>
+        <div class="right-menu" id="aboutMenu">
+            <div class="right-menu-item" onclick="uploadAboutAllFile()">上传文件/网站</div>
+            <div class="right-menu-item" onclick="openTextUpload('about')">上传文本内容</div>
+            <div class="right-menu-item" onclick="openLinkUpload('about')">上传跳转链接</div>
+        </div>
+    </div>
+
+    <div class="section-card" id="works-section">
+        <h2 class="section-title">我的作品</h2>
+        <p>个人项目、网页设计、各类创作作品展示。</p>
+        <a href="works.html" class="section-btn">查看作品</a>
+
+        <div class="file-preview" id="worksFileList"></div>
+        <div class="file-preview">
+            <h4 style="margin:10px 0;color:#666;">快捷跳转链接</h4>
+            <div id="worksLinkBox"></div>
+        </div>
+        <button class="btn clear-btn" onclick="clearWorksFiles()">清空全部文件</button>
+        <button class="btn clear-btn" onclick="clearWorksLink()">清空全部链接</button>
+        <div class="right-menu" id="worksMenu">
+            <div class="right-menu-item" onclick="uploadWorksAllFile()">上传文件/网站</div>
+            <div class="right-menu-item" onclick="openTextUpload('works')">上传文本内容</div>
+            <div class="right-menu-item" onclick="openLinkUpload('works')">上传跳转链接</div>
+        </div>
+    </div>
+
+    <div class="section-card" id="group-section">
+        <h2 class="section-title">我的群聊</h2>
+        <p>点击进入群聊空间，右键可上传图片 & 自定义跳转链接。</p>
+        <div class="section-btn" onclick="goToGroupPage()">进入群聊空间</div>
+    </div>
+</div>
+
+<div class="container" id="groupPage" style="display:none;">
+    <div class="section-card">
+        <div class="group-head">
+            <h2 class="section-title" id="groupSpaceName">群聊图片空间</h2>
+            <button class="btn" onclick="editGroupName()">修改空间名称</button>
+        </div>
+        <p>右键空白处：上传图片 / 上传跳转链接</p>
+        <div style="margin:10px 0;">
+            <button class="btn" onclick="backToMain()">返回主页</button>
+            <button class="btn clear-btn" onclick="clearGroupAll()">清空图片+链接</button>
+        </div>
+
+        <div class="group-img-grid" id="groupImgGrid"></div>
+
+        <div class="group-link-box">
+            <h4 style="margin-bottom:10px;color:#666;">快捷跳转链接</h4>
+            <div id="groupLinkBox"></div>
+        </div>
+    </div>
+    <div class="right-menu" id="groupMenu">
+        <div class="right-menu-item" onclick="uploadGroupImage()">上传图片</div>
+        <div class="right-menu-item" onclick="openGroupLinkModal()">上传跳转链接</div>
+    </div>
+</div>
+
+<div class="modal" id="linkModal">
+    <div class="modal-content">
+        <h3>添加跳转按钮</h3>
+        <input class="modal-input" id="linkBtnName" placeholder="按钮显示名称">
+        <input class="modal-input" id="linkUrl" placeholder="目标网址 https://">
+        <button class="btn" onclick="saveLink()">保存生成按钮</button>
+        <button class="btn logout-btn" onclick="closeLinkModal()">取消</button>
+    </div>
+</div>
+
+<div class="modal" id="groupLinkModal">
+    <div class="modal-content">
+        <h3>添加群聊跳转按钮</h3>
+        <input class="modal-input" id="groupLinkBtnName" placeholder="按钮显示名称">
+        <input class="modal-input" id="groupLinkUrl" placeholder="目标网址 https://">
+        <button class="btn" onclick="saveGroupLink()">保存生成按钮</button>
+        <button class="btn logout-btn" onclick="closeGroupLinkModal()">取消</button>
+    </div>
+</div>
+
+<div class="modal" id="textModal">
+    <div class="modal-content">
+        <h3>新建文本文件</h3>
+        <input class="modal-input" id="textFileName" placeholder="文件名（无需加 .txt）" value="笔记">
+        <textarea class="text-area-lg" id="textFileContent" placeholder="在此输入/粘贴文本内容..."></textarea>
+        <button class="btn" onclick="saveTextFile()">保存上传</button>
+        <button class="btn logout-btn" onclick="closeTextModal()">取消</button>
+    </div>
+</div>
+
+<div class="modal" id="contactModal">
+    <div class="modal-content">
+        <h3>联系我</h3>
+        <input type="text" id="editPhone" class="modal-input" placeholder="输入电话号码">
+        <p><strong>微信二维码（点击图片更换）</strong></p>
+        <img id="editWechatImg" alt="微信二维码" onclick="document.getElementById('wechatImgInput').click()">
+        <input type="file" id="wechatImgInput" style="display:none" accept="image/*">
+        <br>
+        <button class="btn" onclick="saveContact()">保存修改</button>
+        <button class="btn logout-btn" onclick="closeContact()">关闭</button>
+    </div>
+</div>
+
+<div class="modal" id="historyModal">
+    <div class="modal-content" style="max-width: 500px; text-align: left;">
+        <h3 style="text-align: center; margin-bottom: 15px;">历史登录记录</h3>
+        <div id="historyList" style="max-height: 350px; overflow-y: auto;"></div>
+        <div style="text-align: center; margin-top: 15px;">
+            <button class="btn" onclick="closeHistoryModal()">关闭</button>
+            <button class="btn del-btn" onclick="clearLoginHistory()">清空记录</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="editMsgModal">
+    <div class="modal-content">
+        <h3>编辑留言</h3>
+        <textarea class="text-area-lg" id="editMsgContent" placeholder="修改留言内容..."></textarea>
+        <button class="btn" onclick="saveEditedMsg()">保存修改</button>
+        <button class="btn logout-btn" onclick="closeEditMsgModal()">取消</button>
+    </div>
+</div>
+
+<div class="right-menu" id="msgRightMenu">
+    <div class="right-menu-item" onclick="openEditMsgModal()">编辑留言</div>
+    <div class="right-menu-item" onclick="deleteCurrentMsg()">删除留言</div>
+</div>
+
+<input type="file" id="fileAboutInput" style="display:none" multiple>
+<input type="file" id="fileWorksInput" style="display:none" multiple>
+<input type="file" id="fileGroupInput" style="display:none" accept="image/*">
+
+<script>
+    // ########## 核心修改：替换成你的 SheetDB API 地址 ##########
+    const SHEETDB_API = "https://sheetdb.io/api/v1/a2g4vj5fphn98"; // 改成你自己的！
+    // #########################################################
+
+    let currentUserKey = "";
+    let nowTextType = "about";
+    let nowLinkType = "about";
+    let currentEditMsgIndex = -1;
+
+    // 读取公共云数据（所有人共用）
+    async function getCloudData() {
+        try {
+            const res = await fetch(SHEETDB_API);
+            const data = await res.json();
+            return data[0] || {
+                avatar: "",
+                loginHistory: "[]",
+                msg: "[]",
+                phone: "",
+                wximg: "",
+                aboutFiles: "[]",
+                worksFiles: "[]",
+                aboutLink: "[]",
+                worksLink: "[]",
+                groupImgs: "[]",
+                groupLink: "[]",
+                groupName: "群聊图片空间"
+            };
+        } catch (e) {
+            console.log("读取云数据失败", e);
+            return {
+                avatar: "",
+                loginHistory: "[]",
+                msg: "[]",
+                phone: "",
+                wximg: "",
+                aboutFiles: "[]",
+                worksFiles: "[]",
+                aboutLink: "[]",
+                worksLink: "[]",
+                groupImgs: "[]",
+                groupLink: "[]",
+                groupName: "群聊图片空间"
+            };
+        }
+    }
+
+    // 写入公共云数据（所有人同步）
+    async function setCloudData(newData) {
+        try {
+            // 先获取现有数据
+            let oldData = await getCloudData();
+            // 合并新数据
+            let data = { ...oldData, ...newData };
+            
+            // 清空旧数据
+            await fetch(SHEETDB_API, { method: "DELETE" });
+            // 写入新数据
+            await fetch(SHEETDB_API, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify([data])
+            });
+            return true;
+        } catch (e) {
+            console.log("写入云数据失败", e);
+            alert("数据同步失败，请检查网络或SheetDB配置");
+            return false;
+        }
+    }
+
+    window.onload = async function () {
+        let cloudData = await getCloudData();
+        let loginHistory = JSON.parse(cloudData.loginHistory || "[]");
+        let lastLogin = loginHistory[0] || {};
+        
+        document.getElementById("name").value = lastLogin.name || "";
+        document.getElementById("sid").value = lastLogin.sid || "";
+
+        initLoginRightClick();
+        initScrollAnimations();
+        initRightClickScope();
+        initContactModal();
+        initGroupPageRightClick();
+    };
+
+    function initLoginRightClick(){
+        const loginBox = document.getElementById("loginPage");
+        loginBox.addEventListener("contextmenu", e=>{
+            e.preventDefault();
+            hideAllMenu();
+            let m = document.getElementById("loginRightMenu");
+            m.style.left = (e.clientX - 10) + "px";
+            m.style.top = (e.clientY - 10) + "px";
+            m.style.display = "block";
+        })
+    }
+
+    async function showLoginHistory(){
+        let cloudData = await getCloudData();
+        let list = JSON.parse(cloudData.loginHistory || "[]");
+        let dom = document.getElementById("historyList");
+        if(list.length === 0){
+            dom.innerHTML = "<div style='text-align:center; padding:20px; color:#999'>暂无登录记录</div>";
+        } else {
+            dom.innerHTML = list.map(item=>`
+                <div class="history-item">
+                    <div>姓名：${item.name} | 编号：${item.sid}</div>
+                    <div class="history-time">登录时间：${item.time}</div>
+                </div>
+            `).join("");
+        }
+        document.getElementById("historyModal").style.display = "flex";
+    }
+
+    function closeHistoryModal(){
+        document.getElementById("historyModal").style.display = "none";
+    }
+
+    async function clearLoginHistory(){
+        if(!confirm("确定清空所有登录历史记录吗？")) return;
+        await setCloudData({ loginHistory: "[]" });
+        showLoginHistory();
+    }
+
+    async function login() {
+        let name = document.getElementById("name").value.trim();
+        let sid = document.getElementById("sid").value.trim();
+        if(!name || !sid){ alert("请填写姓名和学号！"); return; }
+        
+        currentUserKey = name + "_" + sid;
+        document.getElementById("showName").innerText = name;
+
+        // 记录登录历史（云同步）
+        let cloudData = await getCloudData();
+        let history = JSON.parse(cloudData.loginHistory || "[]");
+        history.unshift({name,sid,time:new Date().toLocaleString()});
+        if(history.length>50) history=history.slice(0,50);
+        await setCloudData({ loginHistory: JSON.stringify(history) });
+
+        // 加载所有云数据
+        showMain();
+        await loadUserAvatar();
+        await renderMessages();
+        await renderAllFileList();
+        await renderAllLinkBtn();
+        await renderGroupImages();
+        await renderGroupLink();
+        await loadGroupName();
+        await loadUserContact();
+    }
+
+    function logout() {
+        currentUserKey = "";
+        document.getElementById("loginPage").style.display = "block";
+        document.getElementById("mainPage").style.display = "none";
+        document.getElementById("groupPage").style.display = "none";
+    }
+
+    function showMain() {
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("mainPage").style.display = "block";
+        document.getElementById("groupPage").style.display = "none";
+    }
+
+    // 加载头像（云同步）
+    async function loadUserAvatar() {
+        let cloudData = await getCloudData();
+        document.getElementById("avatar").src = cloudData.avatar || "https://picsum.photos/200";
+    }
+
+    // 更换头像（云同步）
+    function changeAvatar(){
+        document.getElementById("avatar-input").click();
+    }
+
+    document.getElementById("avatar-input").onchange = async e=>{
+        let f = e.target.files[0];
+        if(!f) return;
+        let r = new FileReader();
+        r.onload = async ev=>{
+            let url = ev.target.result;
+            document.getElementById("avatar").src = url;
+            await setCloudData({ avatar: url });
+        }
+        r.readAsDataURL(f);
+    }
+
+    function initRightClickScope(){
+        const avatarBox = document.querySelector(".avatar-box");
+        avatarBox.addEventListener("contextmenu",e=>{ 
+            e.preventDefault(); 
+            hideAllMenu();
+            let menu = document.getElementById("avatarMenu");
+            menu.style.left = (e.clientX - 10) + "px"; 
+            menu.style.top = (e.clientY - 10) + "px"; 
+            menu.style.display = "block";
+        })
+        const aboutSec = document.getElementById("about-section");
+        aboutSec.addEventListener("contextmenu",e=>{ 
+            e.preventDefault(); 
+            hideAllMenu();
+            let menu = document.getElementById("aboutMenu");
+            menu.style.left = (e.clientX - 10) + "px"; 
+            menu.style.top = (e.clientY - 10) + "px"; 
+            menu.style.display = "block";
+        })
+        const worksSec = document.getElementById("works-section");
+        worksSec.addEventListener("contextmenu",e=>{ 
+            e.preventDefault(); 
+            hideAllMenu();
+            let menu = document.getElementById("worksMenu");
+            menu.style.left = (e.clientX - 10) + "px"; 
+            menu.style.top = (e.clientY - 10) + "px"; 
+            menu.style.display = "block";
+        })
+        document.addEventListener("click",hideAllMenu);
+    }
+
+    function hideAllMenu(){
+        document.querySelectorAll(".right-menu").forEach(m=>m.style.display="none");
+    }
+
+    // 上传跳转链接（云同步）
+    function openLinkUpload(type){
+        nowLinkType = type;
+        document.getElementById("linkBtnName").value = "";
+        document.getElementById("linkUrl").value = "";
+        document.getElementById("linkModal").style.display = "flex";
+    }
+
+    function closeLinkModal(){
+        document.getElementById("linkModal").style.display = "none";
+    }
+
+    async function saveLink(){
+        let btnName = document.getElementById("linkBtnName").value.trim();
+        let url = document.getElementById("linkUrl").value.trim();
+        if(!btnName || !url){
+            alert("请填写按钮名称和跳转网址");
+            return;
+        }
+        
+        let cloudData = await getCloudData();
+        let key = nowLinkType === "about" ? "aboutLink" : "worksLink";
+        let arr = JSON.parse(cloudData[key] || "[]");
+        arr.push({name:btnName,url:url});
+        
+        await setCloudData({ [key]: JSON.stringify(arr) });
+        await renderAllLinkBtn();
+        closeLinkModal();
+        alert("跳转按钮创建成功！");
+    }
+
+    // 渲染所有跳转链接（云同步）
+    async function renderAllLinkBtn(){
+        let cloudData = await getCloudData();
+        let aboutLink = JSON.parse(cloudData.aboutLink || "[]");
+        let worksLink = JSON.parse(cloudData.worksLink || "[]");
+
+        document.getElementById("aboutLinkBox").innerHTML = aboutLink.map((item,idx)=>`
+            <a href="${item.url}" target="_blank" class="btn link-btn-item">${item.name}</a>
+            <button class="del-btn" onclick="delAboutLink(${idx})">删除</button>
+        `).join("");
+
+        document.getElementById("worksLinkBox").innerHTML = worksLink.map((item,idx)=>`
+            <a href="${item.url}" target="_blank" class="btn link-btn-item">${item.name}</a>
+            <button class="del-btn" onclick="delWorksLink(${idx})">删除</button>
+        `).join("");
+    }
+
+    // 删除关于我链接（云同步）
+    async function delAboutLink(idx){
+        let cloudData = await getCloudData();
+        let arr = JSON.parse(cloudData.aboutLink || "[]");
+        arr.splice(idx,1);
+        await setCloudData({ aboutLink: JSON.stringify(arr) });
+        await renderAllLinkBtn();
+    }
+
+    // 删除作品链接（云同步）
+    async function delWorksLink(idx){
+        let cloudData = await getCloudData();
+        let arr = JSON.parse(cloudData.worksLink || "[]");
+        arr.splice(idx,1);
+        await setCloudData({ worksLink: JSON.stringify(arr) });
+        await renderAllLinkBtn();
+    }
+
+    // 上传文本内容（云同步）
+    function openTextUpload(type){
+        nowTextType = type;
+        document.getElementById("textFileName").value = "新建文本";
+        document.getElementById("textFileContent").value = "";
+        document.getElementById("textModal").style.display = "flex";
+    }
+
+    function closeTextModal(){ 
+        document.getElementById("textModal").style.display = "none"; 
+    }
+
+    async function saveTextFile(){
+        let fileName = document.getElementById("textFileName").value.trim() || "未命名";
+        let content = document.getElementById("textFileContent").value;
+        let blob = new Blob([content],{type:"text/plain"});
+        let reader = new FileReader();
+        
+        reader.readAsDataURL(blob);
+        reader.onload = async function(){
+            let cloudData = await getCloudData();
+            let key = nowTextType === "about" ? "aboutFiles" : "worksFiles";
+            let arr = JSON.parse(cloudData[key] || "[]");
+            
+            arr.push({
+                name: fileName + ".txt",
+                type: "text/plain",
+                data: reader.result
+            });
+            
+            await setCloudData({ [key]: JSON.stringify(arr) });
+            await renderAllFileList(); 
+            closeTextModal(); 
+            alert("文本上传成功！");
+        }
+    }
+
+    // 上传关于我文件（云同步）
+    function uploadAboutAllFile(){ 
+        document.getElementById("fileAboutInput").click(); 
+    }
+
+    document.getElementById("fileAboutInput").onchange = async e=>{
+        let files = e.target.files;
+        if(files.length === 0) return;
+
+        let cloudData = await getCloudData();
+        let arr = JSON.parse(cloudData.aboutFiles || "[]");
+
+        for(let file of files){
+            let reader = new FileReader();
+            reader.onload = async ev=>{
+                arr.push({
+                    name: file.name,
+                    type: file.type,
+                    data: ev.target.result
+                });
+                await setCloudData({ aboutFiles: JSON.stringify(arr) });
+            }
+            reader.readAsDataURL(file);
+        }
+        setTimeout(async () => await renderAllFileList(), 500);
+    }
+
+    // 上传作品文件（云同步）
+    function uploadWorksAllFile(){ 
+        document.getElementById("fileWorksInput").click(); 
+    }
+
+    document.getElementById("fileWorksInput").onchange = async e=>{
+        let files = e.target.files;
+        if(files.length === 0) return;
+
+        let cloudData = await getCloudData();
+        let arr = JSON.parse(cloudData.worksFiles || "[]");
+
+        for(let file of files){
+            let reader = new FileReader();
+            reader.onload = async ev=>{
+                arr.push({
+                    name: file.name,
+                    type: file.type,
+                    data: ev.target.result
+                });
+                await setCloudData({ worksFiles: JSON.stringify(arr) });
+            }
+            reader.readAsDataURL(file);
+        }
+        setTimeout(async () => await renderAllFileList(), 500);
+    }
+
+    // 渲染所有文件（云同步）
+    async function renderAllFileList(){
+        let cloudData = await getCloudData();
+        let aboutArr = JSON.parse(cloudData.aboutFiles || "[]");
+        let worksArr = JSON.parse(cloudData.worksFiles || "[]");
+        
+        document.getElementById("aboutFileList").innerHTML = aboutArr.map((item,idx)=>`
+            <div class="file-item">
+                <span>📄 ${item.name}</span>
+                <div>
+                    <a href="javascript:previewFile('about',${idx})">预览</a>
+                    <button class="del-btn" onclick="delAboutFile(${idx})">删除</button>
+                </div>
+            </div>
+        `).join("");
+        
+        document.getElementById("worksFileList").innerHTML = worksArr.map((item,idx)=>`
+            <div class="file-item">
+                <span>📁 ${item.name}</span>
+                <div>
+                    <a href="javascript:previewFile('works',${idx})">预览</a>
+                    <button class="del-btn" onclick="delWorksFile(${idx})">删除</button>
+                </div>
+            </div>
+        `).join("");
+    }
+
+    // 预览文件
+    async function previewFile(type,index){
+        let cloudData = await getCloudData();
+        let arr = JSON.parse(cloudData[type+"Files"] || "[]");
+        let file = arr[index];
+        
+        if(!file) return;
+        
+        let newTab = window.open();
+        if(file.name.toLowerCase().endsWith(".docx")){
+            let byteString = atob(file.data.split(',')[1]);
+            let ab = new ArrayBuffer(byteString.length);
+            let u8 = new Uint8Array(ab);
+            
+            for(let i=0;i<byteString.length;i++){
+                u8[i] = byteString.charCodeAt(i);
+            }
+            
+            mammoth.convertToHtml({arrayBuffer:ab}).then(res=>{
+                newTab.document.write(`
+                    <html>
+                        <head>
+                            <style>body{margin:20px;}img{max-width:100%;}</style>
+                        </head>
+                        <body>${res.value}</body>
+                    </html>
+                `);
+            });
+            return;
+        }
+        
+        newTab.document.write(`
+            <html>
+                <body style="margin:0;padding:0;">
+                    <iframe src="${file.data}" style="width:100%;height:100vh;border:0;"></iframe>
+                </body>
+            </html>
+        `);
+    }
+
+    // 删除关于我文件（云同步）
+    async function delAboutFile(idx){
+        let cloudData = await getCloudData();
+        let arr = JSON.parse(cloudData.aboutFiles || "[]");
+        arr.splice(idx,1);
+        await setCloudData({ aboutFiles: JSON.stringify(arr) });
+        await renderAllFileList();
+    }
+
+    // 删除作品文件（云同步）
+    async function delWorksFile(idx){
+        let cloudData = await getCloudData();
+        let arr = JSON.parse(cloudData.worksFiles || "[]");
+        arr.splice(idx,1);
+        await setCloudData({ worksFiles: JSON.stringify(arr) });
+        await renderAllFileList();
+    }
+
+    // 清空关于我文件（云同步）
+    async function clearAboutFiles(){
+        if(confirm("确定清空？")){
+            await setCloudData({ aboutFiles: "[]" });
+            await renderAllFileList();
+        }
+    }
+
+    // 清空作品文件（云同步）
+    async function clearWorksFiles(){
+        if(confirm("确定清空？")){
+            await setCloudData({ worksFiles: "[]" });
+            await renderAllFileList();
+        }
+    }
+
+    // 清空关于我链接（云同步）
+    async function clearAboutLink(){
+        if(confirm("确定清空？")){
+            await setCloudData({ aboutLink: "[]" });
+            await renderAllLinkBtn();
+        }
+    }
+
+    // 清空作品链接（云同步）
+    async function clearWorksLink(){
+        if(confirm("确定清空？")){
+            await setCloudData({ worksLink: "[]" });
+            await renderAllLinkBtn();
+        }
+    }
+
+    async function openAboutFile(){
+        let cloudData = await getCloudData();
+        let arr = JSON.parse(cloudData.aboutFiles || "[]");
+        if(arr.length > 0){
+            previewFile('about', arr.length - 1);
+        }
+    }
+
+    function initScrollAnimations() {
+        const cards = document.querySelectorAll(".section-card");
+        const ob = new IntersectionObserver(es=>{
+            es.forEach(e=>{
+                if(e.isIntersecting){ 
+                    e.target.classList.add("show"); 
+                    e.target.classList.remove("hide-up"); 
+                } else { 
+                    if(e.target.classList.contains("show")){
+                        e.target.classList.add("hide-up");
+                    }
+                    e.target.classList.remove("show"); 
+                }
+            });
+        },{threshold:0.1});
+        
+        cards.forEach(c=>ob.observe(c));
+    }
+
+    // 发布留言（云同步）
+    async function sendMessage(){
+        let text = document.getElementById("message-input").value.trim();
+        if(!text) return;
+        
+        let cloudData = await getCloudData();
+        let list = JSON.parse(cloudData.msg || "[]");
+        list.unshift({
+            text: text,
+            time: new Date().toLocaleString()
+        });
+        
+        await setCloudData({ msg: JSON.stringify(list) });
+        document.getElementById("message-input").value = "";
+        await renderMessages();
+    }
+    
+    // 渲染留言（云同步）
+    async function renderMessages(){
+        let cloudData = await getCloudData();
+        let list = JSON.parse(cloudData.msg || "[]");
+        
+        document.getElementById("message-list").innerHTML = list.map((m,idx)=>`
+            <div class="message-item" data-idx="${idx}" oncontextmenu="showMsgRightMenu(event,${idx})">
+                ${m.text}
+                <div class="time">${m.time}</div>
+            </div>
+        `).join("");
+    }
+    
+    function showMsgRightMenu(e, idx){
+        e.preventDefault();
+        hideAllMenu();
+        currentEditMsgIndex = idx;
+        
+        let menu = document.getElementById("msgRightMenu");
+        menu.style.left = (e.clientX - 10) + "px";
+        menu.style.top = (e.clientY - 10) + "px";
+        menu.style.display = "block";
+    }
+    
+    // 编辑留言（云同步）
+    async function openEditMsgModal(){
+        let cloudData = await getCloudData();
+        let list = JSON.parse(cloudData.msg || "[]");
+        
+        if(currentEditMsgIndex < 0 || currentEditMsgIndex >= list.length) return;
+        
+        document.getElementById("editMsgContent").value = list[currentEditMsgIndex].text;
+        document.getElementById("editMsgModal").style.display = "flex";
+    }
+    
+    function closeEditMsgModal(){
+        document.getElementById("editMsgModal").style.display = "none";
+    }
+    
+    async function saveEditedMsg(){
+        let newText = document.getElementById("editMsgContent").value.trim();
+        if(!newText){
+            alert("留言内容不能为空！");
+            return;
+        }
+        
+        let cloudData = await getCloudData();
+        let list = JSON.parse(cloudData.msg || "[]");
+        
+        if(currentEditMsgIndex < 0 || currentEditMsgIndex >= list.length) return;
+        
+        list[currentEditMsgIndex].text = newText;
+        list[currentEditMsgIndex].time = "已修改 · " + new Date().toLocaleString();
+        
+        await setCloudData({ msg: JSON.stringify(list) });
+        await renderMessages();
+        closeEditMsgModal();
+        alert("留言修改成功！");
+    }
+    
+    // 删除留言（云同步）
+    async function deleteCurrentMsg(){
+        if(!confirm("确定删除这条留言吗？")) return;
+        
+        let cloudData = await getCloudData();
+        let list = JSON.parse(cloudData.msg || "[]");
+        list.splice(currentEditMsgIndex, 1);
+        
+        await setCloudData({ msg: JSON.stringify(list) });
+        await renderMessages();
+        alert("留言已删除");
+    }
+
+    // 联系我相关（云同步）
+    function initContactModal(){
+        document.getElementById("wechatImgInput").onchange = async e=>{
+            let file = e.target.files[0];
+            if(!file) return;
+            
+            let r = new FileReader();
+            r.onload = async ev=>{
+                let url = ev.target.result;
+                document.getElementById("editWechatImg").src = url;
+                await setCloudData({ wximg: url });
+            }
+            r.readAsDataURL(file);
+        }
+    }
+
+    async function loadUserContact(){
+        let cloudData = await getCloudData();
+        document.getElementById("editPhone").value = cloudData.phone || "";
+        document.getElementById("editWechatImg").src = cloudData.wximg || "";
+    }
+
+    async function saveContact(){
+        let phone = document.getElementById("editPhone").value.trim();
+        let wximg = document.getElementById("editWechatImg").src;
+        
+        await setCloudData({ phone, wximg });
+        alert("保存成功");
+        closeContact();
+    }
+
+    function openContact(){
+        loadUserContact();
+        document.getElementById("contactModal").style.display = "flex";
+    }
+
+    function closeContact(){
+        document.getElementById("contactModal").style.display = "none";
+    }
+
+    // 群聊页面相关（云同步）
+    function goToGroupPage(){
+        document.getElementById("mainPage").style.display = "none";
+        document.getElementById("groupPage").style.display = "block";
+        
+        renderGroupImages();
+        renderGroupLink();
+        loadGroupName();
+    }
+
+    function backToMain(){ 
+        showMain(); 
+    }
+
+    function initGroupPageRightClick(){
+        const groupCard = document.querySelector("#groupPage .section-card");
+        groupCard.addEventListener("contextmenu",e=>{
+            e.preventDefault();
+            hideAllMenu();
+            
+            let menu = document.getElementById("groupMenu");
+            menu.style.left = (e.clientX - 10) + "px";
+            menu.style.top = (e.clientY - 10) + "px";
+            menu.style.display = "block";
+        })
+    }
+
+    // 上传群聊图片（云同步）
+    function uploadGroupImage(){
+        document.getElementById("fileGroupInput").click();
+    }
+
+    document.getElementById("fileGroupInput").onchange = async e=>{
+        let file = e.target.files[0];
+        if(!file) return;
+        
+        let reader = new FileReader();
+        reader.onload = async ev=>{
+            let cloudData = await getCloudData();
+            let arr = JSON.parse(cloudData.groupImgs || "[]");
+            arr.push(ev.target.result);
+            
+            await setCloudData({ groupImgs: JSON.stringify(arr) });
+            await renderGroupImages();
+            alert("图片上传成功！");
+        }
+        reader.readAsDataURL(file);
+    }
+
+    // 渲染群聊图片（云同步）
+    async function renderGroupImages(){
+        let cloudData = await getCloudData();
+        let arr = JSON.parse(cloudData.groupImgs || "[]");
+        
+        document.getElementById("groupImgGrid").innerHTML = arr.map((src,idx)=>`
+            <div class="group-img-wrap">
+                <img src="${src}" class="group-img-item" onclick="window.open('${src}','_blank')">
+                <button class="img-del-btn" onclick="delSingleGroupImg(${idx})">删除</button>
+            </div>
+        `).join("");
+    }
+
+    // 删除单张群聊图片（云同步）
+    async function delSingleGroupImg(idx){
+        let cloudData = await getCloudData();
+        let arr = JSON.parse(cloudData.groupImgs || "[]");
+        arr.splice(idx,1);
+        
+        await setCloudData({ groupImgs: JSON.stringify(arr) });
+        await renderGroupImages();
+    }
+
+    // 上传群聊链接（云同步）
+    function openGroupLinkModal(){
+        document.getElementById("groupLinkBtnName").value = "";
+        document.getElementById("groupLinkUrl").value = "";
+        document.getElementById("groupLinkModal").style.display = "flex";
+    }
+
+    function closeGroupLinkModal(){
+        document.getElementById("groupLinkModal").style.display = "none";
+    }
+
+    async function saveGroupLink(){
+        let btnName = document.getElementById("groupLinkBtnName").value.trim();
+        let url = document.getElementById("groupLinkUrl").value.trim();
+        
+        if(!btnName || !url){
+            alert("请填写按钮名称和跳转网址");
+            return;
+        }
+        
+        let cloudData = await getCloudData();
+        let list = JSON.parse(cloudData.groupLink || "[]");
+        list.push({name:btnName,url:url});
+        
+        await setCloudData({ groupLink: JSON.stringify(list) });
+        await renderGroupLink();
+        closeGroupLinkModal();
+        alert("跳转按钮创建成功！");
+    }
+
+    // 渲染群聊链接（云同步）
+    async function renderGroupLink(){
+        let cloudData = await getCloudData();
+        let list = JSON.parse(cloudData.groupLink || "[]");
+        
+        document.getElementById("groupLinkBox").innerHTML = list.map((item,idx)=>`
+            <a href="${item.url}" target="_blank" class="btn link-btn-item">${item.name}</a>
+            <button class="del-btn" onclick="delGroupLink(${idx})">删除</button>
+        `).join("");
+    }
+
+    // 删除群聊链接（云同步）
+    async function delGroupLink(idx){
+        let cloudData = await getCloudData();
+        let list = JSON.parse(cloudData.groupLink || "[]");
+        list.splice(idx,1);
+        
+        await setCloudData({ groupLink: JSON.stringify(list) });
+        await renderGroupLink();
+    }
+
+    // 清空群聊所有内容（云同步）
+    async function clearGroupAll(){
+        if(confirm("确定清空所有群聊图片和跳转链接？不可恢复！")){
+            await setCloudData({ 
+                groupImgs: "[]",
+                groupLink: "[]"
+            });
+            await renderGroupImages();
+            await renderGroupLink();
+        }
+    }
+
+    // 修改群聊名称（云同步）
+    async function editGroupName(){
+        let name = prompt("请输入群聊空间新名称：", "");
+        if(!name) return;
+        
+        await setCloudData({ groupName: name });
+        await loadGroupName();
+    }
+
+    // 加载群聊名称（云同步）
+    async function loadGroupName(){
+        let cloudData = await getCloudData();
+        let name = cloudData.groupName || "群聊图片空间";
+        document.getElementById("groupSpaceName").innerText = name;
+    }
+</script>
+</body>
+</html>
